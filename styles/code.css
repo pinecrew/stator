@@ -1,4 +1,10 @@
-div.source {width: 55%; padding: 0 1rem; margin-left: -1rem; background-color: #eee; border: 1px solid #aaa;}
+div.source {
+    width: 55%;
+    padding: 0 1rem;
+    margin-left: -1rem;
+    background-color: #eee;
+    border: 1px solid #aaa;
+    font-size: 1rem; }
 .source .hll { background-color: #ffffcc }
 .source .c { color: #999988; font-style: italic } /* Comment */
 .source .err { color: #a61717; background-color: #e3d2d2 } /* Error */

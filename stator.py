@@ -27,7 +27,7 @@ template = r'''
 \setlength{\belowdisplayskip}{0pt}
 
 \begin{lrbox}{\mybox}
-\scalebox{1.5}{%s}
+\scalebox{1.5}{\parbox{\linewidth}{%s}}
 \end{lrbox}
 
 \settowidth {\mywidth}  
@@ -59,7 +59,7 @@ def tex_to_svg(tex):
         f.write(file_contents)
     os.system("latex -output-directory=/tmp /tmp/{}.tex".format(file_name))
     os.system("dvisvgm --exact --no-fonts /tmp/{0}.dvi -o /tmp/{0}.svg".format(file_name))
-    os.system("python3 -m scour.scour --strip-xml-prolog --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none -i /tmp/{0}.svg -o /tmp/{0}1.svg".format(file_name))
+    os.system("python3 -m scour.scour --strip-xml-prolog --enable-comment-stripping --indent=none -i /tmp/{0}.svg -o /tmp/{0}1.svg".format(file_name))
     depth = "0pt"
     with open("/tmp/{}.depth".format(file_name), "r") as f:
         depth = f.read().strip()

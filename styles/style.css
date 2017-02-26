@@ -52,6 +52,7 @@ p.subtitle { font-style: italic;
              -moz-hyphens: none;
              -ms-hyphens: none;
              hyphens: none;  }
+p.formula { text-align: center; }
 
 .numeral { font-family: "Computer Modern Serif"; }
 
