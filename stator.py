@@ -27,7 +27,7 @@ template = r'''
 \setlength{\belowdisplayskip}{0pt}
 
 \begin{lrbox}{\mybox}
-\scalebox{1.5}{\parbox{\linewidth}{%s}}
+\scalebox{1.5}{\begin{minipage}[b]{\linewidth}%s\end{minipage}}
 \end{lrbox}
 
 \settowidth {\mywidth}  
