@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from pyparsing import Group, SkipTo, Forward, Word, ZeroOrMore, OneOrMore, Optional, StringEnd, alphanums, alphas, matchPreviousExpr, MatchFirst
+from pyparsing import Group, SkipTo, Forward, Word, ZeroOrMore, OneOrMore, Optional, NotAny, StringEnd, LineEnd, alphanums, alphas, matchPreviousExpr, MatchFirst, printables
 
 alphabet = alphanums + " ,.?!':;@()[]\n\t"
 
@@ -32,12 +32,16 @@ alphabet = alphanums + " ,.?!':;@()[]\n\t"
 # code = environment("code")
 
 text = Word(alphabet)
+cmd = Word(alphas) & NotAny("begin") & NotAny("end")
 content = Forward()
 env_open = Word(alphas)
 env_close = matchPreviousExpr(env_open)
-env = MatchFirst(Group("\\begin{" + env_open + "}" + ZeroOrMore("[" + content + "]") + ZeroOrMore("{" + content + "}") + content + "\end{" + env_close + "}").setResultsName("env"))
-cmd = Group("\\" + Word(alphas) + ZeroOrMore("[" + content + "]") + ZeroOrMore("{" + content + "}")).setResultsName("cmd")
-content << ((text | env | cmd) + Optional(content))
+opt_arg = ZeroOrMore("[" + content + "]")
+req_arg = ZeroOrMore("{" + content + "}")
+env = Group("\\begin{" + env_open + "}" + opt_arg + req_arg + content + "\end{" + env_close + "}").setResultsName("env")
+cmd = Group("\\" + cmd + opt_arg + req_arg).setResultsName("cmd")
+comment_block = Group('%' + SkipTo(LineEnd()))
+content << ((text | env | cmd | comment_block) + Optional(content))
 
 # section = Forward()
 # subsection = Forward()
