@@ -5,10 +5,11 @@ from pyparsing import Group, SkipTo, Forward, Word, ZeroOrMore, OneOrMore, Optio
 alphabet = alphas + nums + " ,.?!':;\\_@()[]\n\t"
 
 def command(name, required_args=1, optional_args=0):
-    rq_arg = "{" + Word(alphabet) + "}"
-    op_arg = "[" + Word(alphabet) + "]"
+    # TODO: если параметр для умножения равен нулю, то питон (3.6.0 точно) ругается
+    rq_arg = ("{" + Word(alphabet) + "}") * required_args if required_args > 0 else ""
+    op_arg = ("[" + Word(alphabet) + "]") * optional_args if optional_args > 0 else ""
     # TODO: нужно придумать, как передавать позиции оптиональных и неопциональных аргументов
-    cmd = "\\" + name + optional_args * op_arg + required_args * rq_arg
+    cmd = "\\" + name + op_arg + rq_arg
     return Group(cmd).setResultsName("cmd")
 
 def environment(name):
