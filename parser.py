@@ -1,63 +1,57 @@
 #!/usr/bin/env python3
+from pyparsing import *
 
-from pyparsing import Group, SkipTo, Forward, Word, ZeroOrMore, OneOrMore, Optional, NotAny, StringEnd, LineEnd, alphanums, alphas, matchPreviousExpr, MatchFirst, printables
+### Описание грамматики
+tex = Forward()
+# Просто текст. Srange нужен для поддержки русского
+plain_text = alphanums + srange(r"[\0x80-\0x7FF]") + ".,;:'!? "
+# Экранирование
+escape = "\\"
+# Ключевое понятие теха
+group = "{" + tex + "}"
+# Команда. Необязательные аргументы пока не поддерживаются
+opt_arg = "[" + tex + "]"
+args = Forward()
+args << (group | opt_arg) + Optional(args)
+command = Group(escape + Word(alphas) + Optional(args))
+# Математический треш -- то, что находится внутри формул
+math = Forward()
+math_group = "{" + math + "}"
+math_opt_arg = "[" + tex + "]"
+math_args = Forward()
+math_args << (group | opt_arg) + Optional(math_args)
+math_command = Group(escape + Word(alphas) + Optional(math_args))
+math << (Word(plain_text + "^_+-*/()[]=") | math_command | math_group) + Optional(math)
+# Блоки кода
+code = Group("\\begin{code}" + Optional(args) + Word(plain_text + "(){}[]\"'\n\t") + "\\end{code}")
+inline_eq = Combine("\\(" + math + "\\)")
+eq = Combine("\\[" + math + "\\]")
+comment = Group("%" + SkipTo(LineEnd()))
+tex << (Word(plain_text) | group | inline_eq | eq | comment | code | command) + Optional(tex)
 
-alphabet = alphanums + " ,.?!':;@()[]\n\t"
+test = r'''
+\begin{epigraph}
+    У этой штуки был фатальный недостаток...
+\end{epigraph}
 
-# def command(name, required_args=1, optional_args=0):
-#     rq_arg = "{" + Word(alphabet) + "}"
-#     op_arg = "[" + Word(alphabet) + "]"
-#     # TODO: нужно придумать, как передавать позиции оптиональных и неопциональных аргументов
-#     cmd = "\\" + name + (op_arg + required_args * rq_arg
-#     return Group(cmd).setResultsName("cmd")
+\section{Немного арифметики}
+Попробуем разные виды формул: \( f(x) = \sin{x} \)
+\( \sin x = x - \frac{x^3}{3!} + \frac{x^5}{5!} + o(x^6) \) % проверка комментария
 
-# def environment(name):
-#     return Group("\\begin{" + name + "}" + Word(alphabet) + "\\end{" + name + "}").setResultsName("env")
+\subsection{Вопрос вот в чём: чему равно \( \zeta(3) \)?}
+\[
+    \zeta(3) = \sum_{n = 1}^\infty \frac{1}{n^3}
+\]
 
+% comment code
+% \subsection{123}
+\begin{code}[rust]
+    fn main() {
+        println!("Hello World!");
+    }
+\end{code}
+'''
 
-
-# команды
-# title = command("title")
-# b = command("b")
-# i = command("i")
-# u = command("u")
-# s = command("s")
-# url = command("url", 2)
-# fig = command("figure", 2)
-
-# # окружения
-# ep = environment("epigraph")
-# eq = environment("equation")
-# quote = environment("quote")
-# code = environment("code")
-
-text = Word(alphabet)
-cmd = Word(alphas) & NotAny("begin") & NotAny("end")
-content = Forward()
-env_open = Word(alphas)
-env_close = matchPreviousExpr(env_open)
-opt_arg = ZeroOrMore("[" + content + "]")
-req_arg = ZeroOrMore("{" + content + "}")
-env = Group("\\begin{" + env_open + "}" + opt_arg + req_arg + content + "\end{" + env_close + "}").setResultsName("env")
-cmd = Group("\\" + cmd + opt_arg + req_arg).setResultsName("cmd")
-comment_block = Group('%' + SkipTo(LineEnd()))
-content << ((text | env | cmd | comment_block) + Optional(content))
-
-# section = Forward()
-# subsection = Forward()
-# subsubsection = Forward()
-# section << Group(command("section") + Optional(content) + (section | StringEnd() | subsection) + ZeroOrMore(subsection))
-# subsection << Group(command("subsection") + Optional(content) + (section | subsection | StringEnd() | subsubsection) + ZeroOrMore(subsubsection))
-# subsubsection << Group(command("subsubsection") + Optional(content) + (section | subsection | subsubsection | StringEnd()))
-
-
-# entire_file = Group(SkipTo(section) + ZeroOrMore(section))
-parse_list = content.parseFile("test.tex").asList()
-print(parse_list)
-# print(parse_list[0][0])
-# for i in parse_list[0][1:]:
-#     print(i)
-
-# Идея такая: сначала определяем иерархию,
-# потом проводим замены в различных частях
-# команд и окружений
+tokens = tex.parseString(test).asList()
+for token in tokens:
+    print(token)
