@@ -25,10 +25,11 @@ math << (Word(plain_text + "^_+-*/()[]=") | math_command | math_group) + Optiona
 inline_eq = Combine("\\(" + math + "\\)")
 eq = Combine("\\[" + math + "\\]")
 # Блоки кода
-code = Group("\\begin{code}" + Optional(args) + Word(plain_text + "(){}[]\"'\n\t") + "\\end{code}")
+code = Group("\\begin{code}" + Optional(args) + Word(plain_text + "#%<>(){}[]\"'\n\t") + "\\end{code}")
 # Коментарии
 comment = Group("%" + SkipTo(LineEnd()))
 tex << (Word(plain_text) | group | inline_eq | eq | comment | code | command) + Optional(tex)
+tex = tex + StringEnd()
 
 test = r'''
 \begin{epigraph}
@@ -51,6 +52,16 @@ test = r'''
         println!("Hello World!");
     }
 \end{code}
+
+Ну и пример кода на C:
+\begin{code}[c]
+    #include <stdio.h>
+    int main() {
+        printf("%d", 42);
+        return 0;
+    }
+\end{code}
+Есть проблема с парсингом: если добавить последовательность для перевода строки в блоке кода, то он перестаёт парситься.
 '''
 
 tokens = tex.parseString(test).asList()
