@@ -4,7 +4,7 @@ from pyparsing import *
 ### Описание грамматики
 tex = Forward()
 # Просто текст. Srange нужен для поддержки русского
-plain_text = alphanums + srange(r"[\0x80-\0x7FF]") + ".,;:'!? "
+plain_text = alphanums + srange(r"[\0x80-\0x7FF]") + ".,;:'!?- "
 # Экранирование
 escape = "\\"
 # Ключевое понятие теха
