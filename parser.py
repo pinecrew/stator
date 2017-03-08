@@ -9,7 +9,7 @@ plain_text = alphanums + srange(r"[\0x80-\0x7FF]") + ".,;:'!?- "
 escape = "\\"
 # Ключевое понятие теха
 group = "{" + tex + "}"
-# Команда. Необязательные аргументы пока не поддерживаются
+# Команда
 opt_arg = "[" + tex + "]"
 args = Forward()
 args << (group | opt_arg) + Optional(args)
@@ -22,10 +22,11 @@ math_args = Forward()
 math_args << (group | opt_arg) + Optional(math_args)
 math_command = Group(escape + Word(alphas) + Optional(math_args))
 math << (Word(plain_text + "^_+-*/()[]=") | math_command | math_group) + Optional(math)
-# Блоки кода
-code = Group("\\begin{code}" + Optional(args) + Word(plain_text + "(){}[]\"'\n\t") + "\\end{code}")
 inline_eq = Combine("\\(" + math + "\\)")
 eq = Combine("\\[" + math + "\\]")
+# Блоки кода
+code = Group("\\begin{code}" + Optional(args) + Word(plain_text + "(){}[]\"'\n\t") + "\\end{code}")
+# Коментарии
 comment = Group("%" + SkipTo(LineEnd()))
 tex << (Word(plain_text) | group | inline_eq | eq | comment | code | command) + Optional(tex)
 
